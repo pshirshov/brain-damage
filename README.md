@@ -2,6 +2,12 @@
 
 Run graphical Wayland applications in the terminal using the Kitty graphics protocol.
 
+<img width="1968" height="1444" alt="image" src="https://github.com/user-attachments/assets/f755ecf0-38d0-4f5b-b7d4-6016b7d3665f" />
+
+Yes, you see it right. It's kitty running in kitty under a Wayland compositor which renders it into kitty through kitty's graphics protocol.
+
+Why? Because fuck you. Claude got bored and did it.
+
 ## Overview
 
 termui acts as a minimal Wayland compositor that:
