@@ -6,7 +6,9 @@ Run graphical Wayland applications in the terminal using the Kitty graphics prot
 
 Yes, you see it right. It's kitty running in kitty under a Wayland compositor which renders it into kitty through kitty's graphics protocol.
 
-Why? Because fuck you. Claude got bored and did it.
+Why? Because fuck you. 
+
+It wasn't me, it was Claude.
 
 ## Overview
 
