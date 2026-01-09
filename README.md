@@ -10,6 +10,11 @@ Why? Because fuck you.
 
 It wasn't me, it was Claude.
 
+More: 
+
+<img width="1845" height="1426" alt="image" src="https://github.com/user-attachments/assets/879ef7ad-746f-41e3-bbdf-dd27af1fb282" />
+
+
 ## Overview
 
 termui acts as a minimal Wayland compositor that:
