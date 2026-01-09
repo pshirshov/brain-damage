@@ -49,16 +49,26 @@ impl TerminalInput {
         use std::io::stdout;
 
         crossterm::terminal::enable_raw_mode()?;
-        execute!(
-            stdout(),
-            EnableMouseCapture,
-            EnableBracketedPaste,
+
+        // Check if enhanced keyboard mode is supported
+        let supports_enhanced = crossterm::terminal::supports_keyboard_enhancement()
+            .unwrap_or(false);
+        tracing::info!("Terminal supports enhanced keyboard: {}", supports_enhanced);
+
+        let mut stdout = stdout();
+        execute!(stdout, EnableMouseCapture, EnableBracketedPaste)?;
+
+        if supports_enhanced {
             // Enable Kitty keyboard protocol for proper key release events
-            PushKeyboardEnhancementFlags(
-                KeyboardEnhancementFlags::REPORT_EVENT_TYPES
-                    | KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES
-            ),
-        )?;
+            execute!(
+                stdout,
+                PushKeyboardEnhancementFlags(
+                    KeyboardEnhancementFlags::REPORT_EVENT_TYPES
+                        | KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES
+                ),
+            )?;
+        }
+
         Ok(())
     }
 
@@ -71,12 +81,14 @@ impl TerminalInput {
         };
         use std::io::stdout;
 
-        execute!(
-            stdout(),
-            PopKeyboardEnhancementFlags,
-            DisableMouseCapture,
-            DisableBracketedPaste,
-        )?;
+        let supports_enhanced = crossterm::terminal::supports_keyboard_enhancement()
+            .unwrap_or(false);
+
+        let mut stdout = stdout();
+        if supports_enhanced {
+            let _ = execute!(stdout, PopKeyboardEnhancementFlags);
+        }
+        execute!(stdout, DisableMouseCapture, DisableBracketedPaste)?;
         crossterm::terminal::disable_raw_mode()?;
         Ok(())
     }

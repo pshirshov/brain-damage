@@ -369,10 +369,17 @@ fn handle_input_event(state: &mut TermuiState, event: WaylandInputEvent) {
         WaylandInputEvent::KeyboardKey { keysym, state: key_state, time } => {
             let keyboard = state.seat.get_keyboard().unwrap();
 
-            // Convert keysym to keycode (simplified mapping)
+            // Convert keysym to keycode
             let keycode = keysym_to_keycode(keysym);
 
             let pressed = matches!(key_state, terminal::KeyState::Pressed);
+            tracing::info!(
+                "Key: keysym=0x{:x} ({}) -> keycode={}, state={}",
+                keysym.raw(),
+                char::from_u32(keysym.raw()).unwrap_or('?'),
+                keycode.raw(),
+                if pressed { "PRESS" } else { "RELEASE" }
+            );
             let key_state = if pressed {
                 smithay::backend::input::KeyState::Pressed
             } else {
@@ -402,40 +409,98 @@ fn handle_input_event(state: &mut TermuiState, event: WaylandInputEvent) {
     }
 }
 
-/// Convert keysym back to a keycode (simplified mapping)
+/// Convert keysym to XKB keycode (evdev + 8 offset)
+/// XKB keycodes are Linux evdev keycodes + 8
 fn keysym_to_keycode(keysym: smithay::input::keyboard::Keysym) -> Keycode {
-    // This is a simplified mapping. In a real implementation,
-    // we'd use xkbcommon to do proper keysym -> keycode translation
     let raw = keysym.raw();
 
-    let code = match raw {
+    // evdev keycodes - we'll add 8 at the end for XKB
+    let evdev_code = match raw {
+        // Function keys
+        0xff1b => 1,         // Escape -> KEY_ESC
         0xff0d => 28,        // Return -> KEY_ENTER
         0xff09 => 15,        // Tab -> KEY_TAB
         0xff08 => 14,        // BackSpace -> KEY_BACKSPACE
-        0xff1b => 1,         // Escape -> KEY_ESC
+        0x20 => 57,          // Space -> KEY_SPACE
+
+        // Arrow keys
         0xff51 => 105,       // Left -> KEY_LEFT
         0xff53 => 106,       // Right -> KEY_RIGHT
         0xff52 => 103,       // Up -> KEY_UP
         0xff54 => 108,       // Down -> KEY_DOWN
+
+        // Navigation
         0xff50 => 102,       // Home -> KEY_HOME
         0xff57 => 107,       // End -> KEY_END
         0xff55 => 104,       // Page_Up -> KEY_PAGEUP
         0xff56 => 109,       // Page_Down -> KEY_PAGEDOWN
         0xff63 => 110,       // Insert -> KEY_INSERT
         0xffff => 111,       // Delete -> KEY_DELETE
-        0x20 => 57,          // Space -> KEY_SPACE
+
+        // Letters (US QWERTY layout keycodes)
         c if c < 128 => {
-            // ASCII character - map to approximate keycode
             match c as u8 as char {
-                'a'..='z' => 30 + (c - 'a' as u32) % 26,
-                'A'..='Z' => 30 + (c - 'A' as u32) % 26,
-                '0' => 11,
-                '1'..='9' => 2 + (c - '1' as u32),
+                // Number row
+                '1' | '!' => 2,
+                '2' | '@' => 3,
+                '3' | '#' => 4,
+                '4' | '$' => 5,
+                '5' | '%' => 6,
+                '6' | '^' => 7,
+                '7' | '&' => 8,
+                '8' | '*' => 9,
+                '9' | '(' => 10,
+                '0' | ')' => 11,
+                '-' | '_' => 12,
+                '=' | '+' => 13,
+
+                // Top row: QWERTYUIOP
+                'q' | 'Q' => 16,
+                'w' | 'W' => 17,
+                'e' | 'E' => 18,
+                'r' | 'R' => 19,
+                't' | 'T' => 20,
+                'y' | 'Y' => 21,
+                'u' | 'U' => 22,
+                'i' | 'I' => 23,
+                'o' | 'O' => 24,
+                'p' | 'P' => 25,
+                '[' | '{' => 26,
+                ']' | '}' => 27,
+
+                // Home row: ASDFGHJKL
+                'a' | 'A' => 30,
+                's' | 'S' => 31,
+                'd' | 'D' => 32,
+                'f' | 'F' => 33,
+                'g' | 'G' => 34,
+                'h' | 'H' => 35,
+                'j' | 'J' => 36,
+                'k' | 'K' => 37,
+                'l' | 'L' => 38,
+                ';' | ':' => 39,
+                '\'' | '"' => 40,
+                '`' | '~' => 41,
+                '\\' | '|' => 43,
+
+                // Bottom row: ZXCVBNM
+                'z' | 'Z' => 44,
+                'x' | 'X' => 45,
+                'c' | 'C' => 46,
+                'v' | 'V' => 47,
+                'b' | 'B' => 48,
+                'n' | 'N' => 49,
+                'm' | 'M' => 50,
+                ',' | '<' => 51,
+                '.' | '>' => 52,
+                '/' | '?' => 53,
+
                 _ => 0,
             }
         }
         _ => 0,
     };
 
-    Keycode::new(code)
+    // XKB keycode = evdev keycode + 8
+    Keycode::new(evdev_code + 8)
 }
