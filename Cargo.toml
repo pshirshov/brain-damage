@@ -1,0 +1,58 @@
+[package]
+name = "termui"
+version = "0.1.0"
+edition = "2021"
+description = "Run graphical Wayland apps in terminal via Kitty graphics protocol"
+default-run = "termui"
+
+[dependencies]
+# Wayland compositor
+smithay = { version = "0.7", default-features = false, features = [
+    "wayland_frontend",
+    "renderer_pixman",
+    "desktop",
+] }
+wayland-server = "0.31"
+wayland-protocols = { version = "0.32", features = ["server", "client"] }
+wayland-client = "0.31"
+
+# Terminal handling
+crossterm = { version = "0.28", features = ["event-stream"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Image encoding for Kitty protocol
+image = "0.25"
+base64 = "0.22"
+zstd = "0.13"
+
+# Keyboard handling
+xkbcommon = "0.8"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# System
+libc = "0.2"
+rustix = { version = "0.38", features = ["fs"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# For timing
+instant = "0.1"
+
+[[bin]]
+name = "termui"
+path = "src/main.rs"
+
+[[bin]]
+name = "color-test"
+path = "src/bin/color-test.rs"
+
+[[bin]]
+name = "test-client"
+path = "src/bin/test-client.rs"
