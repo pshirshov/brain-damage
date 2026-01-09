@@ -2,7 +2,7 @@
 
 Run graphical Wayland applications in the terminal using the Kitty graphics protocol.
 
-<img width="1968" height="1444" alt="image" src="https://github.com/user-attachments/assets/f755ecf0-38d0-4f5b-b7d4-6016b7d3665f" />
+<img width="1852" height="1288" alt="image" src="https://github.com/user-attachments/assets/20790637-72b4-47e2-b545-e6a4f98ddeee" />
 
 Yes, you see it right. It's kitty running in kitty under a Wayland compositor which renders it into kitty through kitty's graphics protocol.
 
